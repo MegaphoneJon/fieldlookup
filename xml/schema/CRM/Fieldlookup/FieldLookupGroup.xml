@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Fieldlookup</base>
+  <class>FieldLookupGroup</class>
+  <name>civicrm_field_lookup_group</name>
+  <comment>Field Lookup Groups for chain select etc.</comment>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique FieldLookup ID</comment>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+  <field>
+    <name>field_1_entity</name>
+    <title>Field 1 Entity</title>
+    <type>varchar</type>
+    <length>64</length>
+    <required>true</required>
+    <import>true</import>
+    <add>5.13</add>
+    <comment>The entity field 1 belongs to.</comment>
+    <pseudoconstant>
+      <callback>CRM_Fieldlookup_SelectValues::getEntities</callback>
+    </pseudoconstant>
+    <html>
+      <type>Select</type>
+    </html>
+  </field>
+  <index>
+    <name>index_field_1_entity</name>
+    <fieldName>field_1_entity</fieldName>
+    <add>5.13</add>
+  </index>
+  <field>
+    <name>field_1_name</name>
+    <title>Field 1 Name</title>
+    <type>varchar</type>
+    <length>64</length>
+    <required>true</required>
+    <comment>Field name of field 1, or id if a custom field.</comment>
+    <add>5.13</add>
+  </field>
+  <index>
+    <name>index_field_1_name</name>
+    <fieldName>field_1_name</fieldName>
+    <add>5.13</add>
+  </index>
+  <field>
+    <name>field_2_entity</name>
+    <title>Field 2 Entity</title>
+    <type>varchar</type>
+    <length>64</length>
+    <required>true</required>
+    <import>true</import>
+    <add>5.13</add>
+    <comment>The entity field 2 belongs to.</comment>
+    <pseudoconstant>
+      <callback>CRM_Fieldlookup_SelectValues::getEntities</callback>
+    </pseudoconstant>
+    <html>
+      <type>Select</type>
+    </html>
+  </field>
+  <field>
+    <name>field_2_name</name>
+    <title>Field 2 Name</title>
+    <type>varchar</type>
+    <length>64</length>
+    <required>true</required>
+    <comment>Field name of field 2, or id if a custom field.</comment>
+    <add>5.13</add>
+  </field>
+  <field>
+    <name>lookup_type</name>
+    <title>Lookup Type</title>
+    <type>varchar</type>
+    <length>32</length>
+    <required>true</required>
+    <comment>Specifies how this field is used - chain select, reverse lookup, etc.</comment>
+    <add>5.13</add>
+    <pseudoconstant>
+      <callback>CRM_Fieldlookup_SelectValues::getLookupTypes</callback>
+    </pseudoconstant>
+    <html>
+      <type>Select</type>
+    </html>
+  </field>
+  <field>
+    <name>lookup_operator</name>
+    <title>Lookup Operator</title>
+    <type>varchar</type>
+    <length>32</length>
+    <default>'='</default>
+    <required>true</required>
+    <comment>We use this to compare the value of field 1 to the field_1_values.</comment>
+    <add>5.13</add>
+    <pseudoconstant>
+      <callback>CRM_Fieldlookup_SelectValues::getLookupOperators</callback>
+    </pseudoconstant>
+    <html>
+      <type>Select</type>
+    </html>
+  </field>
+
+</table>

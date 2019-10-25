@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Fieldlookup</base>
+  <class>FieldLookup</class>
+  <name>civicrm_field_lookup</name>
+  <comment>Field Lookups for chain select etc.</comment>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique FieldLookup ID</comment>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+  <field>
+    <name>field_lookup_group_id</name>
+    <title>Field Lookup Group ID</title>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>FK to Field Lookup Group table.</comment>
+    <add>5.13</add>
+  </field>
+  <foreignKey>
+    <name>field_lookup_group_id</name>
+    <table>civicrm_field_lookup_group</table>
+    <key>id</key>
+    <add>5.13</add>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+  <field>
+    <name>field_1_value</name>
+    <title>Field 1 Value</title>
+    <type>varchar</type>
+    <length>255</length>
+    <required>true</required>
+    <comment>This is compared to the value submitted.</comment>
+    <add>5.13</add>
+  </field>
+  <field>
+    <name>field_1_value_2</name>
+    <title>Field 1 Value 2</title>
+    <type>varchar</type>
+    <length>255</length>
+    <required>false</required>
+    <comment>Used when your lookup operator requires two values (e.g. BETWEEN)</comment>
+    <add>5.13</add>
+  </field>
+  <field>
+    <name>field_2_value</name>
+    <title>Field 2 Value</title>
+    <type>varchar</type>
+    <length>255</length>
+    <required>true</required>
+    <comment>This is the value(s) returned from a lookup on field 1.</comment>
+    <add>5.13</add>
+  </field>
+
+</table>
