@@ -13,12 +13,12 @@
  */
 class CRM_Fieldlookup_AJAX {
 
-  public static function chainSelect() {
+  public static function chainSelect($fieldName = NULL, $value = NULL) {
     // If we ever lock down access to this function, we need to keep in mind that
     // REQUEST_URI can be spoofed.
-    $fieldName = basename(strtok($_SERVER["REQUEST_URI"], '?'));
+    $fieldName = $fieldName ?? basename(strtok($_SERVER["REQUEST_URI"], '?'));
     $fieldId = str_replace('custom_', '', $fieldName);
-    $value = CRM_Utils_Request::retrieve('_value', 'String');
+    $value = $value ?? CRM_Utils_Request::retrieve('_value', 'String');
     $optionGroupId = civicrm_api3('CustomField', 'getsingle', [
       'return' => ["option_group_id.id"],
       'id' => $fieldId,
@@ -51,7 +51,12 @@ class CRM_Fieldlookup_AJAX {
       $filtered[] = $unfiltered[$fieldLookup['field_2_value']];
     }
 
-    return CRM_Utils_JSON::output($filtered);
+    return $filtered;
+  }
+
+  public static function chainSelectJSON() {
+    $options = self::chainSelect();
+    return CRM_Utils_JSON::output($options);
   }
 
 }

@@ -16,7 +16,7 @@ function fieldlookup_civicrm_alterMenu(&$items) {
   ])['values'];
   foreach ($lookupGroups as $lookupGroup) {
     $items["civicrm/ajax/chainselect/{$lookupGroup['field_2_name']}"] = [
-      'page_callback' => 'CRM_Fieldlookup_AJAX::chainSelect',
+      'page_callback' => 'CRM_Fieldlookup_AJAX::chainSelectJSON',
     ];
   }
 }
@@ -97,16 +97,20 @@ function fieldlookup_addChainSelect($elementName, $settings = [], &$form) {
   // Now update the target field attributes.
   $props['class'] = $targetElement->_attributes['class'] . ' crm-chain-select-target';
   $targetElement->_attributes = array_merge($targetElement->_attributes, $props);
-}
-
-function fieldlookup_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-//  civicrm_api3('FieldLookup', 'get', [
-//    'field_1_entity' => $objectName,
-//  ]);
-  CRM_Core_Error::debug_var('opjectRef', $objectRef);
-  CRM_Core_Error::debug_var('op', $op);
-  CRM_Core_Error::debug_var('objectName', $objectName);
-  CRM_Core_Error::debug_var('objectId', $objectId);
+  // If the control field already has a value, pre-filter.
+  $controlFieldDefaultValue = $form->_defaultValues[$settings['control-field-name']] ?? FALSE;
+  if ($controlFieldDefaultValue) {
+    $options = CRM_Fieldlookup_AJAX::chainSelect($targetElement->getAttribute('data-api-field'), $form->_defaultValues[$settings['control-field-name']] ?? FALSE);
+    foreach ($options as $k => $option) {
+      $filteredOptions[$k] = [
+        'attr' => [
+          'value' => $option['key'],
+        ],
+        'text' => $option['value'],
+      ];
+    }
+    $targetElement->_options = $filteredOptions;
+  }
 }
 
 function fieldlookup_civicrm_custom($op, $groupId, $entityId, &$params) {
