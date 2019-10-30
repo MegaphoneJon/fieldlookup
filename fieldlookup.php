@@ -3,6 +3,24 @@
 require_once 'fieldlookup.civix.php';
 use CRM_Fieldlookup_ExtensionUtil as E;
 
+/**
+ * Generate paths on the fly for each chain-select lookup. This is not a great way to do this - ideally
+ * we'd have a single route and a URL param - but I'm trying not to rewrite the
+ * Civi chain-select code, which hard-codes assumptions that you're using it for state/county purposes.
+ * @param array $items
+ */
+function fieldlookup_civicrm_alterMenu(&$items) {
+  $lookupGroups = civicrm_api3('FieldLookupGroup', 'get', [
+    'sequential' => 1,
+    'return' => ["field_2_name"],
+  ])['values'];
+  foreach ($lookupGroups as $lookupGroup) {
+    $items["civicrm/ajax/chainselect/{$lookupGroup['field_2_name']}"] = [
+      'page_callback' => 'CRM_Fieldlookup_AJAX::chainSelect',
+    ];
+  }
+}
+
 function fieldlookup_civicrm_buildForm($formName, &$form) {
   // For now, we're just working on multi-record custom field forms.  Will expand this later.
   if ($formName != 'CRM_Contact_Form_CustomData') {
@@ -36,7 +54,7 @@ function fieldlookup_civicrm_buildForm($formName, &$form) {
     $settings = [
       'control_field' => $lookupGroup['chain-parent'],
       'control-field-name' => $selectFields[$lookupGroup['chain-parent']],
-      'data-callback' => 'civicrm/ajax/chainselect',
+      'data-callback' => "civicrm/ajax/chainselect/{$lookupGroup['chain-child']}",
       'data-entry-prompt' => 'Choose FIXME first',
       'label' => 'FIXME',
     ];
