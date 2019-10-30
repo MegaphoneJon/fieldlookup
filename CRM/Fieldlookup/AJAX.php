@@ -41,7 +41,7 @@ class CRM_Fieldlookup_AJAX {
     // Get the field lookup values so we can filter.
     $fieldLookups = civicrm_api3('FieldLookup', 'get', [
       'sequential' => 1,
-      'field_lookup_group_id.field_2_name' => "custom_56",
+      'field_lookup_group_id.field_2_name' => $fieldName,
       'field_1_value' => $value,
       'options' => ['limit' => 0],
     ])['values'];
