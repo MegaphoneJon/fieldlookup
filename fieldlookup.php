@@ -3,6 +3,93 @@
 require_once 'fieldlookup.civix.php';
 use CRM_Fieldlookup_ExtensionUtil as E;
 
+function fieldlookup_civicrm_buildForm($formName, &$form) {
+  // For now, we're just working on multi-record custom field forms.  Will expand this later.
+  if ($formName != 'CRM_Contact_Form_CustomData') {
+    return;
+  }
+  CRM_Core_Resources::singleton()->addScriptFile('fieldlookup', 'js/fieldlookup.js');
+  // Collect a list of Select fields, so we can check for field lookups.
+  foreach ($form->_elements as $element) {
+    if ($element instanceof HTML_QuickForm_select) {
+      $selectFields[$element->_attributes['data-api-field']] = $element->_attributes['name'];
+    }
+  }
+  // Are any of these select fields also lookup fields?
+  if ($selectFields) {
+    $lookupGroupsRaw = civicrm_api3('FieldLookupGroup', 'get', [
+      'sequential' => 1,
+      'field_1_name' => ['IN' => array_flip($selectFields)],
+      'lookup_type' => 'chain-select',
+    ]);
+  }
+  // If any of these ARE lookup fields, configure them as chain selects.
+  foreach ($lookupGroupsRaw['values'] as $rawGroup) {
+    $lookupGroups[$selectFields[$rawGroup['field_2_name']]] = [
+      'chain-parent' => $rawGroup['field_1_name'],
+      'chain-child' => $rawGroup['field_2_name'],
+    ];
+  }
+
+  foreach ($lookupGroups as $key => $lookupGroup) {
+    //$form->removeElement($key);
+    $settings = [
+      'control_field' => $lookupGroup['chain-parent'],
+      'control-field-name' => $selectFields[$lookupGroup['chain-parent']],
+      'data-callback' => 'civicrm/ajax/chainselect',
+      'data-entry-prompt' => 'Choose FIXME first',
+      'label' => 'FIXME',
+    ];
+
+    // OK, CRM_Core_Form::addChainSelect() hard-codes assumptions about being for state/county, so
+    // let's use our own variant.
+    fieldlookup_addChainSelect($key, $settings, $form);
+
+  }
+}
+
+/**
+ * Create a chain-select target field. Stolen from CRM_Core_Form because it hard-codes
+ * references to $form->_chainSelects, which is private and preProcessChainSelectFields()
+ * assumes this is a state/country or county/country chain select.
+ *
+ * @param string $elementName
+ * @param array $settings
+ *
+ * @return HTML_QuickForm_Element
+ */
+function fieldlookup_addChainSelect($elementName, $settings = [], &$form) {
+  $props = $settings += [
+    'control_field' => NULL,
+    'data-callback' => NULL,
+    'label' => NULL,
+    'data-empty-prompt' => NULL,
+    'data-none-prompt' => ts('- N/A -'),
+    'multiple' => FALSE,
+    'required' => FALSE,
+    'placeholder' => empty($settings['required']) ? ts('- none -') : ts('- select -'),
+  ];
+  CRM_Utils_Array::remove($props, 'label', 'required', 'control_field', 'context');
+  $props['class'] = (empty($props['class']) ? '' : "{$props['class']} ") . 'crm-select2';
+  $props['data-select-prompt'] = $props['placeholder'];
+  $props['data-name'] = $elementName;
+
+  // My customizations
+  $props['class'] .= ' crm-chain-select-target';
+  CRM_Utils_Array::remove($props, 'control-field-name');
+
+  // Add the 'crm-chain-select-control' class and data-target to the control field.
+  $controlElementId = $form->_elementIndex[$settings['control-field-name']];
+  $form->_elements[$controlElementId]->_attributes['data-target'] = $elementName;
+  $form->_elements[$controlElementId]->_attributes['class'] .= ' crm-chain-select-control';
+
+  // Passing NULL instead of an array of options
+  // CRM-15225 - normally QF will reject any selected values that are not part of the field's options, but due to a
+  // quirk in our patched version of HTML_QuickForm_select, this doesn't happen if the options are NULL
+  // which seems a bit dirty but it allows our dynamically-popuplated select element to function as expected.
+  $form->add('select', $elementName, $settings['label'], NULL, $settings['required'], $props);
+}
+
 function fieldlookup_civicrm_post($op, $objectName, $objectId, &$objectRef) {
 //  civicrm_api3('FieldLookup', 'get', [
 //    'field_1_entity' => $objectName,
