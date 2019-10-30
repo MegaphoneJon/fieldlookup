@@ -50,13 +50,10 @@ function fieldlookup_civicrm_buildForm($formName, &$form) {
   }
 
   foreach ($lookupGroups as $key => $lookupGroup) {
-    //$form->removeElement($key);
     $settings = [
       'control_field' => $lookupGroup['chain-parent'],
       'control-field-name' => $selectFields[$lookupGroup['chain-parent']],
       'data-callback' => "civicrm/ajax/chainselect/{$lookupGroup['chain-child']}",
-      'data-entry-prompt' => 'Choose FIXME first',
-      'label' => 'FIXME',
     ];
 
     // OK, CRM_Core_Form::addChainSelect() hard-codes assumptions about being for state/county, so
@@ -77,35 +74,29 @@ function fieldlookup_civicrm_buildForm($formName, &$form) {
  * @return HTML_QuickForm_Element
  */
 function fieldlookup_addChainSelect($elementName, $settings = [], &$form) {
+  $controlElement = $form->_elements[$form->_elementIndex[$settings['control-field-name']]];
+  $targetElement = $form->_elements[$form->_elementIndex[$elementName]];
+
   $props = $settings += [
     'control_field' => NULL,
     'data-callback' => NULL,
-    'label' => NULL,
-    'data-empty-prompt' => NULL,
+    'label' => $targetElement->_label,
+    'data-entry-prompt' => "Choose $controlElement->_label first",
     'data-none-prompt' => ts('- N/A -'),
-    'multiple' => FALSE,
-    'required' => FALSE,
     'placeholder' => empty($settings['required']) ? ts('- none -') : ts('- select -'),
   ];
-  CRM_Utils_Array::remove($props, 'label', 'required', 'control_field', 'context');
-  $props['class'] = (empty($props['class']) ? '' : "{$props['class']} ") . 'crm-select2';
+  CRM_Utils_Array::remove($props, 'label', 'required', 'control_field', 'context', 'control-field-name');
+
   $props['data-select-prompt'] = $props['placeholder'];
   $props['data-name'] = $elementName;
 
-  // My customizations
-  $props['class'] .= ' crm-chain-select-target';
-  CRM_Utils_Array::remove($props, 'control-field-name');
-
   // Add the 'crm-chain-select-control' class and data-target to the control field.
-  $controlElementId = $form->_elementIndex[$settings['control-field-name']];
-  $form->_elements[$controlElementId]->_attributes['data-target'] = $elementName;
-  $form->_elements[$controlElementId]->_attributes['class'] .= ' crm-chain-select-control';
+  $controlElement->setAttribute('data-target', $elementName);
+  $controlElement->_attributes['class'] .= ' crm-chain-select-control';
 
-  // Passing NULL instead of an array of options
-  // CRM-15225 - normally QF will reject any selected values that are not part of the field's options, but due to a
-  // quirk in our patched version of HTML_QuickForm_select, this doesn't happen if the options are NULL
-  // which seems a bit dirty but it allows our dynamically-popuplated select element to function as expected.
-  $form->add('select', $elementName, $settings['label'], NULL, $settings['required'], $props);
+  // Now update the target field attributes.
+  $props['class'] = $targetElement->_attributes['class'] . ' crm-chain-select-target';
+  $targetElement->_attributes = array_merge($targetElement->_attributes, $props);
 }
 
 function fieldlookup_civicrm_post($op, $objectName, $objectId, &$objectRef) {
