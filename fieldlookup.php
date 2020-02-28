@@ -70,8 +70,6 @@ function fieldlookup_civicrm_buildForm($formName, &$form) {
  *
  * @param string $elementName
  * @param array $settings
- *
- * @return HTML_QuickForm_Element
  */
 function fieldlookup_addChainSelect($elementName, $settings = [], &$form) {
   $controlElement = $form->_elements[$form->_elementIndex[$settings['control-field-name']]];
@@ -113,6 +111,27 @@ function fieldlookup_addChainSelect($elementName, $settings = [], &$form) {
   }
 }
 
+function fieldlookup_civicrm_post($op, $objectName, $id, &$object) {
+  if ($op == 'delete') {
+    return;
+  }
+  // Check for reverse lookups.
+  $fields = array_keys(get_object_vars($object));
+  $fieldLookupGroups = civicrm_api3('FieldLookupGroup', 'get', [
+    'field_1_entity' => $objectName,
+    'field_1_name' => ['IN' => $fields],
+    'lookup_type' => "reverse",
+    'options' => ['limit' => 0],
+  ]);
+
+  foreach ($fieldLookupGroups['values'] as $lookupGroup) {
+    // If reverse lookups are found.
+    $field1Name = $lookupGroup['field_1_name'];
+    $field1Value = $object->$field1Name;
+    doReverseLookup($lookupGroup, $field1Value, $id);
+  }
+}
+
 function fieldlookup_civicrm_custom($op, $groupId, $entityId, &$params) {
   if ($op == 'delete') {
     return;
@@ -136,34 +155,65 @@ function fieldlookup_civicrm_custom($op, $groupId, $entityId, &$params) {
   }
 }
 
-// Currently only supports custom fields!
-function doReverseLookup($lookupGroup, $params, $entityId) {
+/**
+ * Handles reverse lookups.
+ *
+ * Previously only supported custom fields; updated to support non-custom fields but custom fields need fixing now.
+ *
+ * @param $lookupGroup array
+ * @param $field1Value string
+ * @param $entityId int
+ */
+function doReverseLookup($lookupGroup, $field1Value, $entityId) {
+  // FIXME: Move this logic in to hook_civicrm_custom.
   // Find the $params key that has the field1 info.
-  $field1Name = $lookupGroup['field_1_name'];
-  if (strpos($field1Name, 'custom_') === 0) {
-    $customFieldId = substr($field1Name, 7);
-  }
-  $key = array_search($customFieldId, array_column($params, 'custom_field_id'));
-  $field1Value = $params[$key]['value'];
-  
+  // $field1Name = $lookupGroup['field_1_name'];
+  // if (strpos($field1Name, 'custom_') === 0) {
+  //   $customFieldId = substr($field1Name, 7);
+  // }
+  // $key = array_search($customFieldId, array_column($params, 'custom_field_id'));
+  // $field1Value = $params[$key]['value'];
+
   // Find the fieldLookup that matches.
-  $fieldLookup = civicrm_api3('FieldLookup', 'get', [
+  $params = [
     'sequential' => 1,
     'field_lookup_group_id' => $lookupGroup['id'],
-    'field_1_value' => ['=' => $field1Value],
-  ])['values'];
-  setField2($lookupGroup, $entityId, $fieldLookup[0]['field_2_value']);
+    'field_1_value' => [$lookupGroup['lookup_operator'] => $field1Value],
+  ];
+
+  // Handle the "reverse between" case.
+  if ($lookupGroup['lookup_operator'] == 'BETWEEN') {
+    $params['field_1_value'] = ['<=' => $field1Value];
+    $params['field_1_value_2'] = ['>=' => $field1Value];
+  }
+
+  $fieldLookup = civicrm_api3('FieldLookup', 'get', $params)['values'];
+  if ($fieldLookup) {
+    setField2($lookupGroup, $entityId, $fieldLookup[0]['field_2_value']);
+  }
 }
 
-// Given a fieldLookupGroup record, entity ID and value, set the field 2 value.
+/**
+ * Given a fieldLookupGroup record, entity ID and value, set the field 2 value.
+ */
 function setField2($fieldLookup, $entityId, $field2Value) {
   $field2Name = $fieldLookup['field_2_name'];
   $field2Entity = $fieldLookup['field_2_entity'];
-  // Fill in the reverse lookup here.
-  civicrm_api3($field2Entity, 'create', [
+  // Check to see if the field has a value; if so we won't overwrite it.
+  //
+  $existingValue = civicrm_api3($field2Entity, 'get', [
+    'sequential' => 1,
+    'return' => [$field2Name],
     'id' => $entityId,
-    $field2Name => $field2Value,
-  ]);
+  ])['values'][0][$field2Name];
+  if (!$existingValue) {
+    // Fill in the reverse lookup here.
+    civicrm_api3($field2Entity, 'create', [
+      'id' => $entityId,
+      $field2Name => $field2Value,
+    ]);
+  }
+
 }
 
 /**
