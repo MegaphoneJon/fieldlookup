@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <extension key="fieldlookup" type="module">
   <file>fieldlookup</file>
-  <name>FIXME</name>
-  <description>FIXME</description>
+  <name>Field Lookup</name>
+  <description>Get the value of one field based on another field.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>wiscience on wiscience.local</author>
