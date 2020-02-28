@@ -111,12 +111,12 @@ function fieldlookup_addChainSelect($elementName, $settings = [], &$form) {
   }
 }
 
-function fieldlookup_civicrm_post($op, $objectName, $id, &$object) {
+function fieldlookup_civicrm_pre($op, $objectName, $id, &$params) {
   if ($op == 'delete') {
     return;
   }
   // Check for reverse lookups.
-  $fields = array_keys(get_object_vars($object));
+  $fields = array_keys($params);
   $fieldLookupGroups = civicrm_api3('FieldLookupGroup', 'get', [
     'field_1_entity' => $objectName,
     'field_1_name' => ['IN' => $fields],
@@ -126,8 +126,7 @@ function fieldlookup_civicrm_post($op, $objectName, $id, &$object) {
 
   foreach ($fieldLookupGroups['values'] as $lookupGroup) {
     // If reverse lookups are found.
-    $field1Name = $lookupGroup['field_1_name'];
-    $field1Value = $object->$field1Name;
+    $field1Value = $params[$lookupGroup['field_1_name']];
     doReverseLookup($lookupGroup, $field1Value, $id);
   }
 }
