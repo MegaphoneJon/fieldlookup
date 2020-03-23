@@ -26,7 +26,8 @@ function fieldlookup_civicrm_buildForm($formName, &$form) {
   if ($formName != 'CRM_Contact_Form_CustomData') {
     return;
   }
-  CRM_Core_Resources::singleton()->addScriptFile('fieldlookup', 'js/fieldlookup.js');
+  // We no longer use this JS - will remove at a later date.
+  // CRM_Core_Resources::singleton()->addScriptFile('fieldlookup', 'js/fieldlookup.js');
   // Collect a list of Select fields, so we can check for field lookups.
   foreach ($form->_elements as $element) {
     if ($element instanceof HTML_QuickForm_select) {
