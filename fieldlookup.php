@@ -111,12 +111,21 @@ function fieldlookup_addChainSelect($elementName, $settings = [], &$form) {
   }
 }
 
-function fieldlookup_civicrm_pre($op, $objectName, $id, &$params) {
+function fieldlookup_civicrm_post($op, $objectName, $id, &$object) {
+  if (CRM_Core_Transaction::isActive()) {
+    CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'fieldlookup_post_callback', [$op, $objectName, $id, $object]);
+  }
+  else {
+    fieldlookup_post_callback($op, $objectName, $id, $object);
+  }
+}
+
+function fieldlookup_post_callback($op, $objectName, $id, &$object) {
   if ($op == 'delete') {
     return;
   }
   // Check for reverse lookups.
-  $fields = array_keys($params);
+  $fields = array_keys(get_object_vars($object));
   $fieldLookupGroups = civicrm_api3('FieldLookupGroup', 'get', [
     'field_1_entity' => $objectName,
     'field_1_name' => ['IN' => $fields],
@@ -126,8 +135,11 @@ function fieldlookup_civicrm_pre($op, $objectName, $id, &$params) {
 
   foreach ($fieldLookupGroups['values'] as $lookupGroup) {
     // If reverse lookups are found.
-    $field1Value = $params[$lookupGroup['field_1_name']];
-    doReverseLookup($lookupGroup, $field1Value, $id);
+    $field1Name = $lookupGroup['field_1_name'];
+    $field1Value = $object->$field1Name;
+    if ($field1Value) {
+      doReverseLookup($lookupGroup, $field1Value, $id);
+    }
   }
 }
 
