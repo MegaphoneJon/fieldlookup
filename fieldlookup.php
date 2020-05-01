@@ -112,16 +112,23 @@ function fieldlookup_addChainSelect($elementName, $settings = [], &$form) {
   }
 }
 
-function fieldlookup_civicrm_post($op, $objectName, $id, &$object) {
+function fieldlookup_civicrm_post_callback(Civi\Core\Event\PostEvent $event) {
+  $op = $event->op;
+  $objectName = $event->objectName;
+  $id = $event->id;
+  $object = $event->object;
   if (CRM_Core_Transaction::isActive()) {
-    CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'fieldlookup_post_callback', [$op, $objectName, $id, $object]);
+    CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'findNoncustomFieldReverseLookups', [$op, $objectName, $id, $object]);
   }
   else {
-    fieldlookup_post_callback($op, $objectName, $id, $object);
+    findNoncustomFieldReverseLookups($op, $objectName, $id, $object);
   }
 }
 
-function fieldlookup_post_callback($op, $objectName, $id, &$object) {
+/**
+ * Identifies reverse lookups triggered by non-custom fields.
+ */
+function findNoncustomFieldReverseLookups($op, $objectName, $id, &$object) {
   if ($op == 'delete') {
     return;
   }
@@ -144,7 +151,24 @@ function fieldlookup_post_callback($op, $objectName, $id, &$object) {
   }
 }
 
-function fieldlookup_civicrm_custom($op, $groupId, $entityId, &$params) {
+function fieldlookup_civicrm_custom_callback(Civi\Core\Event\GenericHookEvent $event) {
+  $values = $event->getHookValues();
+  $op = $values[0];
+  $groupId = $values[1];
+  $entityId = $values[2];
+  $params = $values[3];
+  if (CRM_Core_Transaction::isActive()) {
+    CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'findCustomFieldReverseLookups', [$op, $groupId, $entityId, &$params]);
+  }
+  else {
+    findCustomFieldReverseLookups($op, $groupId, $entityId, $params);
+  }
+}
+
+/**
+ * Identifies reverse lookups triggered by custom fields.
+ */
+function findCustomFieldReverseLookups($op, $groupId, $entityId, &$params) {
   if ($op == 'delete') {
     return;
   }
@@ -155,6 +179,7 @@ function fieldlookup_civicrm_custom($op, $groupId, $entityId, &$params) {
   foreach ($customFieldIds as $fieldId) {
     $customFieldNames[] = 'custom_' . $fieldId;
   }
+  // FIXME: We should extract this to a class where we can cache the value as a static, like the salutations extension.
   $fieldLookupGroups = civicrm_api3('FieldLookupGroup', 'get', [
     'field_1_name' => ['IN' => $customFieldNames],
     'lookup_type' => "reverse",
@@ -163,29 +188,24 @@ function fieldlookup_civicrm_custom($op, $groupId, $entityId, &$params) {
 
   foreach ($fieldLookupGroups['values'] as $lookupGroup) {
     // If reverse lookups are found.
-    doReverseLookup($lookupGroup, $params, $entityId);
+    $field1Name = $lookupGroup['field_1_name'];
+    if (strpos($field1Name, 'custom_') === 0) {
+      $customFieldId = substr($field1Name, 7);
+    }
+    $key = array_search($customFieldId, array_column($params, 'custom_field_id'));
+    $field1Value = $params[$key]['value'];
+    doReverseLookup($lookupGroup, $field1Value, $entityId);
   }
 }
 
 /**
  * Handles reverse lookups.
  *
- * Previously only supported custom fields; updated to support non-custom fields but custom fields need fixing now.
- *
  * @param $lookupGroup array
  * @param $field1Value string
  * @param $entityId int
  */
 function doReverseLookup($lookupGroup, $field1Value, $entityId) {
-  // FIXME: Move this logic in to hook_civicrm_custom.
-  // Find the $params key that has the field1 info.
-  // $field1Name = $lookupGroup['field_1_name'];
-  // if (strpos($field1Name, 'custom_') === 0) {
-  //   $customFieldId = substr($field1Name, 7);
-  // }
-  // $key = array_search($customFieldId, array_column($params, 'custom_field_id'));
-  // $field1Value = $params[$key]['value'];
-
   // Find the fieldLookup that matches.
   $params = [
     'sequential' => 1,
@@ -235,6 +255,13 @@ function setField2($fieldLookup, $entityId, $field2Value) {
  */
 function fieldlookup_civicrm_config(&$config) {
   _fieldlookup_civix_civicrm_config($config);
+  if (isset(Civi::$statics[__FUNCTION__])) {
+    return;
+  }
+  Civi::$statics[__FUNCTION__] = 1;
+  // We want to run last, to avoid unpleasant interactions with other extensions using the post hook.
+  Civi::dispatcher()->addListener('hook_civicrm_post', 'fieldlookup_civicrm_post_callback', -10);
+  Civi::dispatcher()->addListener('hook_civicrm_custom', 'fieldlookup_civicrm_custom_callback', -10);
 }
 
 /**
