@@ -117,6 +117,10 @@ function fieldlookup_civicrm_post_callback(Civi\Core\Event\PostEvent $event) {
   $objectName = $event->objectName;
   $id = $event->id;
   $object = $event->object;
+  // Not 100% sure why this is even called with no op, but it's erroneous, let's skip it.
+  if (!$op) {
+    return;
+  }
   if (CRM_Core_Transaction::isActive()) {
     CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'findNoncustomFieldReverseLookups', [$op, $objectName, $id, $object]);
   }
