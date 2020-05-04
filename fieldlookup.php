@@ -113,14 +113,11 @@ function fieldlookup_addChainSelect($elementName, $settings = [], &$form) {
 }
 
 function fieldlookup_civicrm_post_callback(Civi\Core\Event\PostEvent $event) {
-  $op = $event->op;
-  $objectName = $event->objectName;
+  $op = $event->action;
+  $objectName = $event->entity;
   $id = $event->id;
   $object = $event->object;
-  // Not 100% sure why this is even called with no op, but it's erroneous, let's skip it.
-  if (!$op) {
-    return;
-  }
+
   if (CRM_Core_Transaction::isActive()) {
     CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'findNoncustomFieldReverseLookups', [$op, $objectName, $id, $object]);
   }
@@ -138,14 +135,9 @@ function findNoncustomFieldReverseLookups($op, $objectName, $id, &$object) {
   }
   // Check for reverse lookups.
   $fields = array_keys(get_object_vars($object));
-  $fieldLookupGroups = civicrm_api3('FieldLookupGroup', 'get', [
-    'field_1_entity' => $objectName,
-    'field_1_name' => ['IN' => $fields],
-    'lookup_type' => "reverse",
-    'options' => ['limit' => 0],
-  ]);
+  $fieldLookupGroups = CRM_Fieldlookup_BAO_FieldLookup::getReverseLookupGroups($fields, $objectName);
 
-  foreach ($fieldLookupGroups['values'] as $lookupGroup) {
+  foreach ($fieldLookupGroups as $lookupGroup) {
     // If reverse lookups are found.
     $field1Name = $lookupGroup['field_1_name'];
     $field1Value = $object->$field1Name;
@@ -183,14 +175,9 @@ function findCustomFieldReverseLookups($op, $groupId, $entityId, &$params) {
   foreach ($customFieldIds as $fieldId) {
     $customFieldNames[] = 'custom_' . $fieldId;
   }
-  // FIXME: We should extract this to a class where we can cache the value as a static, like the salutations extension.
-  $fieldLookupGroups = civicrm_api3('FieldLookupGroup', 'get', [
-    'field_1_name' => ['IN' => $customFieldNames],
-    'lookup_type' => "reverse",
-    'options' => ['limit' => 0],
-  ]);
+  $fieldLookupGroups = CRM_Fieldlookup_BAO_FieldLookup::getReverseLookupGroups($customFieldNames);
 
-  foreach ($fieldLookupGroups['values'] as $lookupGroup) {
+  foreach ($fieldLookupGroups as $lookupGroup) {
     // If reverse lookups are found.
     $field1Name = $lookupGroup['field_1_name'];
     if (strpos($field1Name, 'custom_') === 0) {

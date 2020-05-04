@@ -4,23 +4,29 @@ use CRM_Fieldlookup_ExtensionUtil as E;
 class CRM_Fieldlookup_BAO_FieldLookup extends CRM_Fieldlookup_DAO_FieldLookup {
 
   /**
-   * Create a new FieldLookup based on array-data
+   * Check to see if a given set of fields has corresponding field lookup groups.
    *
-   * @param array $params key-value pairs
-   * @return CRM_Fieldlookup_DAO_FieldLookup|NULL
+   * @param array $fields The fields to check to see if they trigger a reverse lookup.
+   * @param string $entity The name of the entity being checked.
+   * @return array
    *
-  public static function create($params) {
-    $className = 'CRM_Fieldlookup_DAO_FieldLookup';
-    $entityName = 'FieldLookup';
-    $hook = empty($params['id']) ? 'create' : 'edit';
-
-    CRM_Utils_Hook::pre($hook, $entityName, CRM_Utils_Array::value('id', $params), $params);
-    $instance = new $className();
-    $instance->copyValues($params);
-    $instance->save();
-    CRM_Utils_Hook::post($hook, $entityName, $instance->id, $instance);
-
-    return $instance;
-  } */
+   */
+  public static function getReverseLookupGroups($fields, $entity = NULL) {
+    // FIXME: We should cache the API lookup here.
+    // Return nothing if no fields are passed.
+    if (!$fields) {
+      return;
+    }
+    if (in_array($entity, ['Individual', 'Organization', 'Household'])) {
+      $entity = 'Contact';
+    }
+    $fieldLookupGroups = civicrm_api3('FieldLookupGroup', 'get', [
+      'field_1_entity' => $entity,
+      'field_1_name' => ['IN' => $fields],
+      'lookup_type' => "reverse",
+      'options' => ['limit' => 0],
+    ]);
+    return $fieldLookupGroups['values'];
+  }
 
 }
