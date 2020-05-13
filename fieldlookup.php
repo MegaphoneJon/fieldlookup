@@ -129,7 +129,7 @@ function fieldlookup_civicrm_post_callback(Civi\Core\Event\PostEvent $event) {
 /**
  * Identifies reverse lookups triggered by non-custom fields.
  */
-function findNoncustomFieldReverseLookups($op, $objectName, $id, &$object) {
+function findNoncustomFieldReverseLookups($op, $objectName, $id, $object) {
   if ($op == 'delete') {
     return;
   }
@@ -164,7 +164,7 @@ function fieldlookup_civicrm_custom_callback(Civi\Core\Event\GenericHookEvent $e
 /**
  * Identifies reverse lookups triggered by custom fields.
  */
-function findCustomFieldReverseLookups($op, $groupId, $entityId, &$params) {
+function findCustomFieldReverseLookups($op, $groupId, $entityId, $params) {
   if ($op == 'delete') {
     return;
   }
