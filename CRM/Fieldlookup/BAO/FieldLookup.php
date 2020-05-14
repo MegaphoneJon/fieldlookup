@@ -15,7 +15,7 @@ class CRM_Fieldlookup_BAO_FieldLookup extends CRM_Fieldlookup_DAO_FieldLookup {
     // FIXME: We should cache the API lookup here.
     // Return nothing if no fields are passed.
     if (!$fields) {
-      return;
+      return [];
     }
     if (in_array($entity, ['Individual', 'Organization', 'Household'])) {
       $entity = 'Contact';

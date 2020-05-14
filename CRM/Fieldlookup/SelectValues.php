@@ -2,17 +2,23 @@
 
 class CRM_Fieldlookup_SelectValues {
 
+  private static $entities = [];
   /**
    * get a list of the available entities.
+   *
    * @return array List of entities in Civi.
    */
   public static function getEntities() {
+    if (self::$entities) {
+      return self::$entities;
+    }
     $result = civicrm_api3('Entity', 'get')['values'];
     $return = [];
     foreach ($result as $entity) {
       $return[$entity] = $entity;
     }
-    return $return;
+    self::$entities = $return;
+    return self::$entities;
   }
 
   public static function getFieldTypes() {

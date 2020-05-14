@@ -117,7 +117,11 @@ function fieldlookup_civicrm_post_callback(Civi\Core\Event\PostEvent $event) {
   $objectName = $event->entity;
   $id = $event->id;
   $object = $event->object;
-
+  // Some entities have a post hook but no API, that's bad news.  Skip them.
+  $validEntities = CRM_Fieldlookup_SelectValues::getEntities();
+  if (!in_array($objectName, $validEntities)) {
+    return;
+  }
   if (CRM_Core_Transaction::isActive()) {
     CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'findNoncustomFieldReverseLookups', [$op, $objectName, $id, $object]);
   }
