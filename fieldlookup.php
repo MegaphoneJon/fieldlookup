@@ -72,8 +72,6 @@ function fieldlookup_civicrm_buildForm($formName, &$form) {
  *
  * @param string $elementName
  * @param array $settings
- *
- * @return HTML_QuickForm_Element
  */
 function fieldlookup_addChainSelect($elementName, $settings = [], &$form) {
   $controlElement = $form->_elements[$form->_elementIndex[$settings['control-field-name']]];
@@ -115,7 +113,63 @@ function fieldlookup_addChainSelect($elementName, $settings = [], &$form) {
   }
 }
 
-function fieldlookup_civicrm_custom($op, $groupId, $entityId, &$params) {
+function fieldlookup_civicrm_post_callback(Civi\Core\Event\PostEvent $event) {
+  $op = $event->action;
+  $objectName = $event->entity;
+  $id = $event->id;
+  $object = $event->object;
+  // Some entities have a post hook but no API, that's bad news.  Skip them.
+  $validEntities = CRM_Fieldlookup_SelectValues::getEntities();
+  if (!in_array($objectName, $validEntities)) {
+    return;
+  }
+  if (CRM_Core_Transaction::isActive()) {
+    CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'findNoncustomFieldReverseLookups', [$op, $objectName, $id, $object]);
+  }
+  else {
+    findNoncustomFieldReverseLookups($op, $objectName, $id, $object);
+  }
+}
+
+/**
+ * Identifies reverse lookups triggered by non-custom fields.
+ */
+function findNoncustomFieldReverseLookups($op, $objectName, $id, $object) {
+  if ($op == 'delete') {
+    return;
+  }
+  // Check for reverse lookups.
+  $fields = array_keys(get_object_vars($object));
+  $fieldLookupGroups = CRM_Fieldlookup_BAO_FieldLookup::getReverseLookupGroups($fields, $objectName);
+
+  foreach ($fieldLookupGroups as $lookupGroup) {
+    // If reverse lookups are found.
+    $field1Name = $lookupGroup['field_1_name'];
+    $field1Value = $object->$field1Name;
+    if ($field1Value) {
+      doReverseLookup($lookupGroup, $field1Value, $id);
+    }
+  }
+}
+
+function fieldlookup_civicrm_custom_callback(Civi\Core\Event\GenericHookEvent $event) {
+  $values = $event->getHookValues();
+  $op = $values[0];
+  $groupId = $values[1];
+  $entityId = $values[2];
+  $params = $values[3];
+  if (CRM_Core_Transaction::isActive()) {
+    CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'findCustomFieldReverseLookups', [$op, $groupId, $entityId, &$params]);
+  }
+  else {
+    findCustomFieldReverseLookups($op, $groupId, $entityId, $params);
+  }
+}
+
+/**
+ * Identifies reverse lookups triggered by custom fields.
+ */
+function findCustomFieldReverseLookups($op, $groupId, $entityId, $params) {
   if ($op == 'delete') {
     return;
   }
@@ -126,46 +180,68 @@ function fieldlookup_civicrm_custom($op, $groupId, $entityId, &$params) {
   foreach ($customFieldIds as $fieldId) {
     $customFieldNames[] = 'custom_' . $fieldId;
   }
-  $fieldLookupGroups = civicrm_api3('FieldLookupGroup', 'get', [
-    'field_1_name' => ['IN' => $customFieldNames],
-    'lookup_type' => "reverse",
-    'options' => ['limit' => 0],
-  ]);
+  $fieldLookupGroups = CRM_Fieldlookup_BAO_FieldLookup::getReverseLookupGroups($customFieldNames);
 
-  foreach ($fieldLookupGroups['values'] as $lookupGroup) {
+  foreach ($fieldLookupGroups as $lookupGroup) {
     // If reverse lookups are found.
-    doReverseLookup($lookupGroup, $params, $entityId);
+    $field1Name = $lookupGroup['field_1_name'];
+    if (strpos($field1Name, 'custom_') === 0) {
+      $customFieldId = substr($field1Name, 7);
+    }
+    $key = array_search($customFieldId, array_column($params, 'custom_field_id'));
+    $field1Value = $params[$key]['value'];
+    doReverseLookup($lookupGroup, $field1Value, $entityId);
   }
 }
 
-// Currently only supports custom fields!
-function doReverseLookup($lookupGroup, $params, $entityId) {
-  // Find the $params key that has the field1 info.
-  $field1Name = $lookupGroup['field_1_name'];
-  if (strpos($field1Name, 'custom_') === 0) {
-    $customFieldId = substr($field1Name, 7);
-  }
-  $key = array_search($customFieldId, array_column($params, 'custom_field_id'));
-  $field1Value = $params[$key]['value'];
-  
+/**
+ * Handles reverse lookups.
+ *
+ * @param $lookupGroup array
+ * @param $field1Value string
+ * @param $entityId int
+ */
+function doReverseLookup($lookupGroup, $field1Value, $entityId) {
   // Find the fieldLookup that matches.
-  $fieldLookup = civicrm_api3('FieldLookup', 'get', [
+  $params = [
     'sequential' => 1,
     'field_lookup_group_id' => $lookupGroup['id'],
-    'field_1_value' => ['=' => $field1Value],
-  ])['values'];
-  setField2($lookupGroup, $entityId, $fieldLookup[0]['field_2_value']);
+    'field_1_value' => [$lookupGroup['lookup_operator'] => $field1Value],
+  ];
+
+  // Handle the "reverse between" case.
+  if ($lookupGroup['lookup_operator'] == 'BETWEEN') {
+    $params['field_1_value'] = ['<=' => $field1Value];
+    $params['field_1_value_2'] = ['>=' => $field1Value];
+  }
+
+  $fieldLookup = civicrm_api3('FieldLookup', 'get', $params)['values'];
+  if ($fieldLookup) {
+    setField2($lookupGroup, $entityId, $fieldLookup[0]['field_2_value']);
+  }
 }
 
-// Given a fieldLookupGroup record, entity ID and value, set the field 2 value.
+/**
+ * Given a fieldLookupGroup record, entity ID and value, set the field 2 value.
+ */
 function setField2($fieldLookup, $entityId, $field2Value) {
   $field2Name = $fieldLookup['field_2_name'];
   $field2Entity = $fieldLookup['field_2_entity'];
-  // Fill in the reverse lookup here.
-  civicrm_api3($field2Entity, 'create', [
+  // Check to see if the field has a value; if so we won't overwrite it.
+  //
+  $existingValue = civicrm_api3($field2Entity, 'get', [
+    'sequential' => 1,
+    'return' => [$field2Name],
     'id' => $entityId,
-    $field2Name => $field2Value,
-  ]);
+  ])['values'][0][$field2Name];
+  if (!$existingValue) {
+    // Fill in the reverse lookup here.
+    civicrm_api3($field2Entity, 'create', [
+      'id' => $entityId,
+      $field2Name => $field2Value,
+    ]);
+  }
+
 }
 
 /**
@@ -175,6 +251,13 @@ function setField2($fieldLookup, $entityId, $field2Value) {
  */
 function fieldlookup_civicrm_config(&$config) {
   _fieldlookup_civix_civicrm_config($config);
+  if (isset(Civi::$statics[__FUNCTION__])) {
+    return;
+  }
+  Civi::$statics[__FUNCTION__] = 1;
+  // We want to run last, to avoid unpleasant interactions with other extensions using the post hook.
+  Civi::dispatcher()->addListener('hook_civicrm_post', 'fieldlookup_civicrm_post_callback', -10);
+  Civi::dispatcher()->addListener('hook_civicrm_custom', 'fieldlookup_civicrm_custom_callback', -10);
 }
 
 /**
