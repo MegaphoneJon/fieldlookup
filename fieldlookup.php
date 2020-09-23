@@ -43,6 +43,7 @@ function fieldlookup_civicrm_buildForm($formName, &$form) {
     ]);
   }
   // If any of these ARE lookup fields, configure them as chain selects.
+  $lookupGroups = [];
   foreach ($lookupGroupsRaw['values'] as $rawGroup) {
     $lookupGroups[$selectFields[$rawGroup['field_2_name']]] = [
       'chain-parent' => $rawGroup['field_1_name'],

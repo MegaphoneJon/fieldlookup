@@ -46,6 +46,7 @@ class CRM_Fieldlookup_AJAX {
       'options' => ['limit' => 0],
     ])['values'];
 
+    $filtered = [];
     // Create the filtered list in api.optionlist format.
     foreach ($fieldLookups as $fieldLookup) {
       $filtered[] = $unfiltered[$fieldLookup['field_2_value']];
