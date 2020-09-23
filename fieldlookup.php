@@ -226,14 +226,13 @@ function doReverseLookup($lookupGroup, $field1Value, $entityId) {
 function setField2($fieldLookup, $entityId, $field2Value) {
   $field2Name = $fieldLookup['field_2_name'];
   $field2Entity = $fieldLookup['field_2_entity'];
-  // Check to see if the field has a value; if so we won't overwrite it.
-  //
+  // Check to see if the field has the same value; if so we won't overwrite it.
   $existingValue = civicrm_api3($field2Entity, 'get', [
     'sequential' => 1,
     'return' => [$field2Name],
     'id' => $entityId,
   ])['values'][0][$field2Name];
-  if (!$existingValue) {
+  if ($existingValue !== $field2Value) {
     // Fill in the reverse lookup here.
     civicrm_api3($field2Entity, 'create', [
       'id' => $entityId,
