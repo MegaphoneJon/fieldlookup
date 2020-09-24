@@ -31,7 +31,8 @@ function fieldlookup_civicrm_buildForm($formName, &$form) {
   // Collect a list of Select fields, so we can check for field lookups.
   foreach ($form->_elements as $element) {
     if ($element instanceof HTML_QuickForm_select) {
-      $selectFields[$element->_attributes['data-api-field']] = $element->_attributes['name'];
+      preg_match('/(custom_\d+)/', $element->_attributes['name'], $matches);
+      $selectFields[$matches[1]] = $element->_attributes['name'];
     }
   }
   // Are any of these select fields also lookup fields?
