@@ -140,7 +140,7 @@ function findNoncustomFieldReverseLookups($op, $objectName, $id, $object) {
     return;
   }
   // Check for reverse lookups.
-  $fields = array_keys(get_object_vars($object));
+  $fields = array_keys((array) $object);
   $fieldLookupGroups = CRM_Fieldlookup_BAO_FieldLookup::getReverseLookupGroups($fields, $objectName);
 
   foreach ($fieldLookupGroups as $lookupGroup) {
