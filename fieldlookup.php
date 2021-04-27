@@ -101,7 +101,10 @@ function fieldlookup_addChainSelect($elementName, $settings = [], &$form) {
   // If the control field already has a value, pre-filter.
   $controlFieldDefaultValue = $form->_defaultValues[$settings['control-field-name']] ?? FALSE;
   if ($controlFieldDefaultValue) {
-    $options = CRM_Fieldlookup_AJAX::chainSelect($targetElement->getAttribute('data-api-field'), $form->_defaultValues[$settings['control-field-name']] ?? FALSE);
+    // We can't use data-api-field since you need "Administer CiviCRM" so let's calculate it with preg_match.
+    preg_match('/(custom_\d+)/', $targetElement->_attributes['name'], $matches);
+    $targetField = $matches[1];
+    $options = CRM_Fieldlookup_AJAX::chainSelect($targetField, $form->_defaultValues[$settings['control-field-name']] ?? FALSE);
     foreach ($options as $k => $option) {
       $filteredOptions[$k] = [
         'attr' => [
