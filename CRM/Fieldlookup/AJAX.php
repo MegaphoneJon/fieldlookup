@@ -49,7 +49,10 @@ class CRM_Fieldlookup_AJAX {
     $filtered = [];
     // Create the filtered list in api.optionlist format.
     foreach ($fieldLookups as $fieldLookup) {
-      $filtered[] = $unfiltered[$fieldLookup['field_2_value']];
+      // This "if" statement prevents deleted option values that are still in fieldlookup from breaking the lookup.
+      if ($unfiltered[$fieldLookup['field_2_value']]) {
+        $filtered[] = $unfiltered[$fieldLookup['field_2_value']];
+      }
     }
 
     return $filtered;
