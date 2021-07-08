@@ -11,7 +11,7 @@ use CRM_Fieldlookup_ExtensionUtil as E;
  */
 function fieldlookup_civicrm_alterMenu(&$items) {
   // We have an issue where this is called before the autoloader can find the FieldLookupGroup API, so let's check for it first.
-  $apiExists = (bool) \Civi\Api4\Entity::get()
+  $apiExists = (bool) \Civi\Api4\Entity::get(FALSE)
     ->addWhere('name', '=', 'FieldLookupGroup')
     ->execute()
     ->count();
