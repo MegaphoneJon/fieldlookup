@@ -68,7 +68,7 @@ CREATE TABLE `civicrm_field_lookup_group` (
   )
   
  
-)    ;
+) COLLATE utf8mb4_general_ci  ;
 
 -- /*******************************************************
 -- *
@@ -87,9 +87,9 @@ CREATE TABLE `civicrm_field_lookup` (
      `field_2_value` varchar(255) NOT NULL   COMMENT 'This is the value(s) returned from a lookup on field 1.' 
 ,
         PRIMARY KEY (`id`)
- 
+,       INDEX `field_1_value`(field_1_value), INDEX `field_1_value_2`(field_1_value_2)
  
 ,          CONSTRAINT FK_civicrm_field_lookup_field_lookup_group_id FOREIGN KEY (`field_lookup_group_id`) REFERENCES `civicrm_field_lookup_group`(`id`) ON DELETE CASCADE  
-)    ;
+) COLLATE utf8mb4_general_ci    ;
 
  
