@@ -144,13 +144,20 @@ function findNoncustomFieldReverseLookups($op, $objectName, $id, $object) {
   // Check for reverse lookups.
   $fields = array_keys((array) $object);
   $fieldLookupGroups = CRM_Fieldlookup_BAO_FieldLookup::getReverseLookupGroups($fields, $objectName);
-
   foreach ($fieldLookupGroups as $lookupGroup) {
     // If reverse lookups are found.
+    // Handle different foreign keys on the other table.
+    if ($lookupGroup['table_1_fk'] ?? FALSE) {
+      $foreignKey = $lookupGroup['table_1_fk'];
+      $entityId = $object->$foreignKey;
+    }
+    else {
+      $entityId = $id;
+    }
     $field1Name = $lookupGroup['field_1_name'];
     $field1Value = $object->$field1Name;
     if ($field1Value) {
-      doReverseLookup($lookupGroup, $field1Value, $id);
+      doReverseLookup($lookupGroup, $field1Value, $entityId);
     }
   }
 }
