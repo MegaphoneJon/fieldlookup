@@ -9,6 +9,22 @@ class CRM_Fieldlookup_Upgrader extends CRM_Fieldlookup_Upgrader_Base {
   // By convention, functions that look like "function upgrade_NNNN()" are
   // upgrade tasks. They are executed in order (like Drupal's hook_update_N).
 
+  public function upgrade_1000() {
+    $config = CRM_Core_Config::singleton();
+    $dbName = DB::connect($config->dsn)->_db;
+
+    $sql = "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = %1 AND TABLE_NAME = 'civicrm_field_lookup_group' AND COLUMN_NAME = 'table_1_fk'";
+    $dao = CRM_Core_DAO::executeQuery($sql, array(1 => array($dbName, 'String')));
+    if ($dao->N) {
+      $this->ctx->log->info('Skipped fieldlookup update 1000.  Column table_1_fk already present.');
+    }
+    else {
+      $this->ctx->log->info('Applying fieldlookup update 1000.  Add table_1_fk.');
+      CRM_Core_DAO::executeQuery('ALTER TABLE civicrm_field_lookup_group ADD COLUMN `table_1_fk` VARCHAR(255) DEFAULT NULL COMMENT "Foreign key that links table 1 to table 2."');
+    }
+    return TRUE;
+
+  }
   /**
    * Example: Run an external SQL script when the module is installed.
    *
