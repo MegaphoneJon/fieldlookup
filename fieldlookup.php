@@ -150,6 +150,10 @@ function findNoncustomFieldReverseLookups($op, $objectName, $id, $object) {
     if ($lookupGroup['table_1_fk'] ?? FALSE) {
       $foreignKey = $lookupGroup['table_1_fk'];
       $entityId = $object->$foreignKey;
+      // If a foreign key is specified but missing, we're not doing any field lookups. E.g. for addresses in a LocBlock.
+      if (!$entityId) {
+        return;
+      }
     }
     else {
       $entityId = $id;
