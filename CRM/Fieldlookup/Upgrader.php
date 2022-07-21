@@ -54,20 +54,17 @@ class CRM_Fieldlookup_Upgrader extends CRM_Fieldlookup_Upgrader_Base {
   public function disable() {
     CRM_Core_DAO::executeQuery('UPDATE foo SET is_active = 0 WHERE bar = "whiz"');
   }
+  */
 
-  /**
-   * Example: Run a couple simple queries.
-   *
-   * @return TRUE on success
-   * @throws Exception
-   *
-  public function upgrade_4200() {
-    $this->ctx->log->info('Applying update 4200');
-    CRM_Core_DAO::executeQuery('UPDATE foo SET bar = "whiz"');
-    CRM_Core_DAO::executeQuery('DELETE FROM bang WHERE willy = wonka(2)');
+  public function upgrade_1000() {
+    $this->ctx->log->info('Adding Field Lookup Group name field');
+    $columnExists = CRM_Core_DAO::singleValueQuery("SHOW COLUMNS FROM `civicrm_field_lookup_group` LIKE 'name';");
+    if (!$columnExists) {
+      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_field_lookup_group ADD COLUMN `name` varchar(255) DEFAULT NULL COMMENT 'Field Lookup Group Name' AFTER id");
+      CRM_Core_DAO::executeQuery('UPDATE civicrm_field_lookup_group SET `name` = CONCAT("Field Lookup Group", id)');
+    }
     return TRUE;
-  } // */
-
+  }
 
   /**
    * Example: Run an external SQL script.

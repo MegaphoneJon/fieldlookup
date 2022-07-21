@@ -11,6 +11,9 @@
     <name>id</name>
     <type>int unsigned</type>
     <required>true</required>
+    <html>
+      <type>Text</type>
+    </html>
     <comment>Unique FieldLookup ID</comment>
   </field>
   <primaryKey>
@@ -23,12 +26,18 @@
     <type>int unsigned</type>
     <required>true</required>
     <comment>FK to Field Lookup Group table.</comment>
+    <html>
+      <type>Text</type>
+    </html>        
     <add>5.13</add>
   </field>
   <foreignKey>
     <name>field_lookup_group_id</name>
     <table>civicrm_field_lookup_group</table>
     <key>id</key>
+    <html>
+      <type>Text</type>
+    </html>    
     <add>5.13</add>
     <onDelete>CASCADE</onDelete>
   </foreignKey>
@@ -39,6 +48,9 @@
     <length>255</length>
     <required>true</required>
     <comment>This is compared to the value submitted.</comment>
+    <html>
+      <type>Text</type>
+    </html>
     <add>5.13</add>
   </field>
   <field>
@@ -48,6 +60,9 @@
     <length>255</length>
     <required>false</required>
     <comment>Used when your lookup operator requires two values (e.g. BETWEEN)</comment>
+    <html>
+      <type>Text</type>
+    </html>
     <add>5.13</add>
   </field>
   <field>
@@ -57,6 +72,9 @@
     <length>255</length>
     <required>true</required>
     <comment>This is the value(s) returned from a lookup on field 1.</comment>
+    <html>
+      <type>Text</type>
+    </html>
     <add>5.13</add>
   </field>
 
