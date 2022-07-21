@@ -20,8 +20,12 @@
   <compatibility>
     <ver>5.31</ver>
   </compatibility>
-  <comments></comments>
+  <comments/>
+  <classloader>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
   <civix>
     <namespace>CRM/Fieldlookup</namespace>
+    <format>22.05.0</format>
   </civix>
 </extension>
