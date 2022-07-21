@@ -28,4 +28,8 @@
     <namespace>CRM/Fieldlookup</namespace>
     <format>22.05.0</format>
   </civix>
+  <mixins>
+    <mixin>mgd-php@1.0.0</mixin>
+    <mixin>afform-entity-php@1.0.0</mixin>
+  </mixins>
 </extension>

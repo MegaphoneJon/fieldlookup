@@ -1,0 +1,6 @@
+{
+    "type": "search",
+    "title": "Field Lookup Groups",
+    "server_route": "civicrm/field-lookup-groups",
+    "permission": "administer CiviCRM"
+}
