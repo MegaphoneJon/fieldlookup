@@ -1,0 +1,17 @@
+<af-form ctrl="afform">
+  <af-entity url-autofill="1" type="FieldLookupGroup" name="FieldLookupGroup1" label="Field Lookup Group 1" actions="{create: true, update: true}" security="RBAC" />
+  <fieldset af-fieldset="FieldLookupGroup1" class="af-container" af-title="Field Lookup Group 1">
+    <af-field name="name" />
+    <af-field name="lookup_type" />
+    <af-field name="lookup_operator" />
+    <div class="af-container af-layout-inline">
+      <af-field name="field_1_entity" />
+      <af-field name="field_1_name" />
+    </div>
+    <div class="af-container af-layout-inline">
+      <af-field name="field_2_entity" />
+      <af-field name="field_2_name" />
+    </div>
+  </fieldset>
+  <button class="af-button btn btn-primary" crm-icon="fa-check" ng-click="afform.submit()">Submit</button>
+</af-form>

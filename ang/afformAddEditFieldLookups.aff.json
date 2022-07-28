@@ -1,0 +1,16 @@
+{
+    "type": "form",
+    "requires": [],
+    "title": "Add/Edit Field Lookups",
+    "description": "",
+    "is_dashlet": false,
+    "is_public": false,
+    "is_token": false,
+    "server_route": "civicrm/add-field-lookup",
+    "permission": "administer CiviCRM",
+    "redirect": "civicrm/field-lookups",
+    "create_submission": true,
+    "entity_type": null,
+    "join_entity": null,
+    "contact_summary": null
+}

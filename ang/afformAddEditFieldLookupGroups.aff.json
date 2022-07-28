@@ -1,0 +1,16 @@
+{
+    "type": "form",
+    "requires": [],
+    "title": "Add/Edit Field Lookup Groups",
+    "description": "",
+    "is_dashlet": false,
+    "is_public": false,
+    "is_token": false,
+    "server_route": "civicrm/add-field-lookup-group",
+    "permission": "administer CiviCRM",
+    "redirect": "civicrm/field-lookup-groups",
+    "create_submission": true,
+    "entity_type": null,
+    "join_entity": null,
+    "contact_summary": null
+}

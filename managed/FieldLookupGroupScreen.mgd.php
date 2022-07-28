@@ -70,6 +70,7 @@
                   'dataType' => 'String',
                   'label' => 'Name',
                   'sortable' => TRUE,
+                  'editable' => TRUE,
                   'cssRules' => [
                     [
                       'font-bold',
@@ -137,7 +138,6 @@
                       'entity' => '',
                       'action' => '',
                       'join' => '',
-                      'target' => '',
                     ],
                   ],
                   'type' => 'links',

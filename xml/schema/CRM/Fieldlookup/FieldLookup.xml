@@ -27,9 +27,14 @@
     <required>true</required>
     <comment>FK to Field Lookup Group table.</comment>
     <html>
-      <type>Text</type>
+      <type>Select</type>
     </html>        
     <add>5.13</add>
+    <pseudoconstant>
+      <table>civicrm_field_lookup_group</table>
+      <keyColumn>id</keyColumn>
+      <labelColumn>name</labelColumn>
+    </pseudoconstant>
   </field>
   <foreignKey>
     <name>field_lookup_group_id</name>

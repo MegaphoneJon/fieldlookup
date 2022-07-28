@@ -1,0 +1,10 @@
+<af-form ctrl="afform">
+  <af-entity url-autofill="1" type="FieldLookup" name="FieldLookup1" label="Field Lookup 1" actions="{create: true, update: true}" security="RBAC" data="{}" />
+  <button class="af-button btn btn-primary" crm-icon="fa-check" ng-click="afform.submit()">Submit</button>
+  <fieldset af-fieldset="FieldLookup1" class="af-container" af-title="Field Lookup 1">
+    <af-field ng-hidden name="field_lookup_group_id" />
+    <af-field name="field_1_value" defn="{help_post: 'This is the value entered by the person editing a record.', input_attrs: {}}" />
+    <af-field name="field_1_value_2" defn="{help_post: 'If your field lookup group isn\'t using BETWEEN as its operator, leave this blank.', input_attrs: {}}" />
+    <af-field name="field_2_value" defn="{help_post: 'This is the value that populates the second field if the Field 1 Value matches.', input_attrs: {}}" />
+  </fieldset>
+</af-form>

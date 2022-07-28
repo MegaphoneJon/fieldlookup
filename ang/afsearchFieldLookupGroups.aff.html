@@ -1,7 +1,15 @@
-<a class="btn btn-primary crm-popup" ng-href="{{ crmUrl('civicrm/grant/add', {reset: 1, action: 'add', context: 'grant', cid: options.contact_id}) }}">
-  <i class="crm-i fa-plus-circle"/>
-  {{:: ts('Add Field Lookup Group') }}
-</a>
+<div class="btn-group">
+  <a class="btn btn-primary crm-popup" ng-href="{{ crmUrl('civicrm/add-field-lookup-group') }}">
+    <i class="crm-i fa-plus-circle"/>
+    {{:: ts('Add Field Lookup Group') }}
+  </a>
+</div>
 <div af-fieldset="">
   <crm-search-display-table search-name="Field_Lookup_Groups" display-name="Field_Lookup_Groups_Table_1"></crm-search-display-table>
+</div>
+<div class="btn-group">
+  <a class="btn btn-primary crm-popup" ng-href="{{ crmUrl('civicrm/add-field-lookup-group') }}" target="_blank">
+    <i class="crm-i fa-plus-circle"/>
+    {{:: ts('Add Field Lookup Group') }}
+  </a>
 </div>
