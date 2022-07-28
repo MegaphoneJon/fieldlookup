@@ -72,7 +72,7 @@ class CRM_Fieldlookup_Upgrader extends CRM_Fieldlookup_Upgrader_Base {
   }
   */
 
-  public function upgrade_1000() {
+  public function upgrade_1001() {
     $this->ctx->log->info('Adding Field Lookup Group name field');
     $columnExists = CRM_Core_DAO::singleValueQuery("SHOW COLUMNS FROM `civicrm_field_lookup_group` LIKE 'name';");
     if (!$columnExists) {
