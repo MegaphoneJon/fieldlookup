@@ -4,7 +4,7 @@ namespace Civi\Api4;
 /**
  * FieldLookupGroup entity.
  *
- * Provided by the Fieldlookup extension.
+ * Provided by the Field Lookup extension.
  *
  * @package Civi\Api4
  */

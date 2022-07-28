@@ -130,5 +130,15 @@
       <type>Select</type>
     </html>
   </field>
+    <field>
+    <name>table_1_fk</name>
+    <title>Table 1 foreign key</title>
+    <type>varchar</type>
+    <length>255</length>
+    <default>NULL</default>
+    <required>false</required>
+    <comment>Foreign key that links table 1 to table 2.</comment>
+    <add>5.35</add>
+  </field>
 
 </table>

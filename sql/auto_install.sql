@@ -43,6 +43,7 @@ CREATE TABLE `civicrm_field_lookup_group` (
   `field_2_name` varchar(64) NOT NULL COMMENT 'Field name of field 2, or id if a custom field.',
   `lookup_type` varchar(32) NOT NULL COMMENT 'Specifies how this field is used - chain select, reverse lookup, etc.',
   `lookup_operator` varchar(32) NOT NULL DEFAULT '=' COMMENT 'We use this to compare the value of field 1 to the field_1_values.',
+  `table_1_fk` varchar(255) NULL DEFAULT NULL COMMENT 'Foreign key that links table 1 to table 2.',
   PRIMARY KEY (`id`),
   INDEX `index_field_1_entity`(field_1_entity),
   INDEX `index_field_1_name`(field_1_name)

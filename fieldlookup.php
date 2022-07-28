@@ -10,21 +10,11 @@ use CRM_Fieldlookup_ExtensionUtil as E;
  * @param array $items
  */
 function fieldlookup_civicrm_alterMenu(&$items) {
-  // We have an issue where this is called before the autoloader can find the FieldLookupGroup API, so let's check for it first.
-  $apiExists = (bool) \Civi\Api4\Entity::get(FALSE)
-    ->addWhere('name', '=', 'FieldLookupGroup')
-    ->execute()
-    ->count();
-  if (!$apiExists) {
-    return;
-  }
-
-  $lookupGroups = civicrm_api3('FieldLookupGroup', 'get', [
-    'sequential' => 1,
-    'return' => ["field_2_name"],
-  ])['values'];
-  foreach ($lookupGroups as $lookupGroup) {
-    $items["civicrm/ajax/chainselect/{$lookupGroup['field_2_name']}"] = [
+  // We have an issue where this is called before the autoloader can find the FieldLookupGroup API, so we look using the DAO.
+  $dao = new CRM_Fieldlookup_DAO_FieldLookupGroup();
+  $dao->find();
+  while ($dao->fetch()) {
+    $items["civicrm/ajax/chainselect/{$dao->field_2_name}"] = [
       'page_callback' => 'CRM_Fieldlookup_AJAX::chainSelectJSON',
     ];
   }
@@ -154,13 +144,24 @@ function findNoncustomFieldReverseLookups($op, $objectName, $id, $object) {
   // Check for reverse lookups.
   $fields = array_keys((array) $object);
   $fieldLookupGroups = CRM_Fieldlookup_BAO_FieldLookup::getReverseLookupGroups($fields, $objectName);
-
   foreach ($fieldLookupGroups as $lookupGroup) {
     // If reverse lookups are found.
+    // Handle different foreign keys on the other table.
+    if ($lookupGroup['table_1_fk'] ?? FALSE) {
+      $foreignKey = $lookupGroup['table_1_fk'];
+      $entityId = $object->$foreignKey;
+      // If a foreign key is specified but missing, we're not doing any field lookups. E.g. for addresses in a LocBlock.
+      if (!$entityId) {
+        return;
+      }
+    }
+    else {
+      $entityId = $id;
+    }
     $field1Name = $lookupGroup['field_1_name'];
     $field1Value = $object->$field1Name;
     if ($field1Value) {
-      doReverseLookup($lookupGroup, $field1Value, $id);
+      doReverseLookup($lookupGroup, $field1Value, $entityId);
     }
   }
 }

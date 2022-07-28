@@ -104,6 +104,13 @@ class CRM_Fieldlookup_DAO_FieldLookupGroup extends CRM_Core_DAO {
   public $lookup_operator;
 
   /**
+   * Foreign key that links table 1 to table 2.
+   *
+   * @var string
+   */
+  public $table_1_fk;
+
+  /**
    * Class constructor.
    */
   public function __construct() {
@@ -289,6 +296,22 @@ class CRM_Fieldlookup_DAO_FieldLookupGroup extends CRM_Core_DAO {
             'callback' => 'CRM_Fieldlookup_SelectValues::getLookupOperators',
           ],
           'add' => '5.13',
+        ],
+        'table_1_fk' => [
+          'name' => 'table_1_fk',
+          'type' => CRM_Utils_Type::T_STRING,
+          'title' => E::ts('Table 1 foreign key'),
+          'description' => E::ts('Foreign key that links table 1 to table 2.'),
+          'required' => FALSE,
+          'maxlength' => 255,
+          'size' => CRM_Utils_Type::HUGE,
+          'where' => 'civicrm_field_lookup_group.table_1_fk',
+          'default' => 'NULL',
+          'table_name' => 'civicrm_field_lookup_group',
+          'entity' => 'FieldLookupGroup',
+          'bao' => 'CRM_Fieldlookup_DAO_FieldLookupGroup',
+          'localizable' => 0,
+          'add' => '5.35',
         ],
       ];
       CRM_Core_DAO_AllCoreTables::invoke(__CLASS__, 'fields_callback', Civi::$statics[__CLASS__]['fields']);
