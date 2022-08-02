@@ -246,7 +246,7 @@ function setField2($fieldLookup, $entityId, $field2Value) {
     'sequential' => 1,
     'return' => [$field2Name],
     'id' => $entityId,
-  ])['values'][0][$field2Name];
+  ])['values'][0][$field2Name] ?? NULL;
   if ($existingValue !== $field2Value) {
     // Fill in the reverse lookup here.
     civicrm_api3($field2Entity, 'create', [
