@@ -86,7 +86,6 @@ function _fieldlookup_civix_mixin_polyfill() {
   }
 }
 
-
 /**
  * (Delegated) Implements hook_civicrm_config().
  *
@@ -113,7 +112,6 @@ function _fieldlookup_civix_civicrm_config(&$config = NULL) {
 
   $include_path = $extRoot . PATH_SEPARATOR . get_include_path();
   set_include_path($include_path);
-
   _fieldlookup_civix_mixin_polyfill();
 }
 
