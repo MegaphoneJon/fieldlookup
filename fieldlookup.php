@@ -73,7 +73,7 @@ function fieldlookup_civicrm_buildForm($formName, &$form) {
  * @param string $elementName
  * @param array $settings
  */
-function fieldlookup_addChainSelect($elementName, $settings = [], &$form) {
+function fieldlookup_addChainSelect($elementName, array $settings, &$form) {
   $controlElement = $form->_elements[$form->_elementIndex[$settings['control-field-name']]];
   $targetElement = $form->_elements[$form->_elementIndex[$elementName]];
 
