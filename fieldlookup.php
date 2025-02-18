@@ -249,9 +249,15 @@ function setField2($fieldLookup, $entityId, $field2Value) {
   ])['values'][0][$field2Name] ?? NULL;
   if ($existingValue !== $field2Value) {
     // Fill in the reverse lookup here.
-    civicrm_api3($field2Entity, 'create', [
-      'id' => $entityId,
-      $field2Name => $field2Value,
+    civicrm_api4($field2Entity, 'update', [
+      'values' => [
+        $field2Name => $field2Value,
+      ],
+      'where' => [
+        ['id', '=', $entityId],
+      ],
+      'checkPermissions' => FALSE,
+      'fixAddress' => FALSE,
     ]);
   }
 
