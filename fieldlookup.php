@@ -127,7 +127,7 @@ function fieldlookup_civicrm_post_callback(Civi\Core\Event\PostEvent $event) {
     return;
   }
   if (CRM_Core_Transaction::isActive()) {
-    CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'findNoncustomFieldReverseLookups', [$op, $objectName, $id, $object]);
+    CRM_Core_Transaction::addPostCommit($event);
   }
   else {
     findNoncustomFieldReverseLookups($op, $objectName, $id, $object);
