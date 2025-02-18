@@ -257,7 +257,6 @@ function setField2($fieldLookup, $entityId, $field2Value) {
         ['id', '=', $entityId],
       ],
       'checkPermissions' => FALSE,
-      'fixAddress' => FALSE,
     ]);
   }
 
