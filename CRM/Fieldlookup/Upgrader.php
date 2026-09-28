@@ -14,7 +14,7 @@ class CRM_Fieldlookup_Upgrader extends CRM_Extension_Upgrader_Base {
     $dbName = DB::connect($config->dsn)->_db;
 
     $sql = "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = %1 AND TABLE_NAME = 'civicrm_field_lookup_group' AND COLUMN_NAME = 'table_1_fk'";
-    $dao = CRM_Core_DAO::executeQuery($sql, array(1 => array($dbName, 'String')));
+    $dao = CRM_Core_DAO::executeQuery($sql, [1 => [$dbName, 'String']]);
     if ($dao->N) {
       $this->ctx->log->info('Skipped fieldlookup update 1000.  Column table_1_fk already present.');
     }

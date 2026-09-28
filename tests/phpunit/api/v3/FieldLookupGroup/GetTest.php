@@ -46,7 +46,7 @@ class api_v3_FieldLookupGroup_GetTest extends \PHPUnit\Framework\TestCase implem
    * Note how the function name begins with the word "test".
    */
   public function testApiExample() {
-    $result = civicrm_api3('FieldLookupGroup', 'Get', array('magicword' => 'sesame'));
+    $result = civicrm_api3('FieldLookupGroup', 'Get', ['magicword' => 'sesame']);
     $this->assertEquals('Twelve', $result['values'][12]['name']);
   }
 
