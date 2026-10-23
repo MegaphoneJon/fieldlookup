@@ -7,6 +7,7 @@
         'update' => 'unmodified',
         'params' => [
           'version' => 4,
+          'match' => ['name'],
           'values' => [
             'name' => 'Field_Lookup_Groups',
             'label' => 'Field Lookup Groups',
@@ -43,6 +44,7 @@
         'update' => 'unmodified',
         'params' => [
           'version' => 4,
+          'match' => ['saved_search_id', 'name'],
           'values' => [
             'name' => 'Field_Lookup_Groups_Table_1',
             'label' => 'Field Lookup Groups Table 1',
