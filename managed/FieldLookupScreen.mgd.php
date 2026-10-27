@@ -7,6 +7,7 @@
         'update' => 'always',
         'params' => [
           'version' => 4,
+          'match' => ['name'],
           'values' => [
             'name' => 'Field_Lookups',
             'label' => 'Field Lookups',
@@ -40,6 +41,7 @@
         'update' => 'always',
         'params' => [
           'version' => 4,
+          'match' => ['saved_search_id', 'name'],
           'values' => [
             'name' => 'Field_Lookups_Table_1',
             'label' => 'Field Lookups Table 1',
